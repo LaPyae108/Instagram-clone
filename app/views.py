@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request,abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
-from .models import Post,User,Comment,Like  # Changed from database to models for convention
+from .models import Post,User,Comment,Like, Tag # Changed from database to models for convention
 from app.forms import RegistrationForm, LoginForm, PostForm, CommentForm  # Added CommentForm for comments
 from werkzeug.security import generate_password_hash, check_password_hash  # For secure password handling
 
@@ -65,7 +65,18 @@ def logout():
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
+        # Create a new Post
         post = Post(title=form.title.data, content=form.content.data, author=current_user)
+
+        # Handle tags
+        if form.tags.data:
+            tag_names = [name.strip() for name in form.tags.data.split(',')]
+            for name in tag_names:
+                tag = Tag.query.filter_by(name=name).first()
+                if not tag:
+                    tag = Tag(name=name)
+                post.tags.append(tag)
+
         db.session.add(post)
         db.session.commit()
         flash('Your post has been created!', 'success')
@@ -144,23 +155,34 @@ def user_profile(username):
 def edit_post(post_id):
     post = Post.query.get_or_404(post_id)
 
-    # Ensure only the owner can edit the post
+    # Ensure only the owner can edit
     if post.author != current_user:
-        abort(403)  # Forbidden access
+        abort(403)
 
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
         post.content = form.content.data
+
+        # Update tags
+        post.tags.clear()
+        if form.tags.data:
+            tag_names = [name.strip() for name in form.tags.data.split(',')]
+            for name in tag_names:
+                tag = Tag.query.filter_by(name=name).first()
+                if not tag:
+                    tag = Tag(name=name)
+                post.tags.append(tag)
+
         db.session.commit()
         flash('Your post has been updated!', 'success')
         return redirect(url_for('post_detail', post_id=post.id))
 
-    # Pre-fill the form with the post's current data
+    # Pre-fill the form with current data
     form.title.data = post.title
     form.content.data = post.content
+    form.tags.data = ', '.join([tag.name for tag in post.tags])
     return render_template('edit_post.html', form=form, post=post)
-
 
 # Delete Post
 @app.route('/post/<int:post_id>/delete', methods=['POST'])
@@ -176,3 +198,14 @@ def delete_post(post_id):
     db.session.commit()
     flash('Your post has been deleted!', 'info')
     return redirect(url_for('home'))
+
+@app.route('/tag/<tag_name>')
+def tag_posts(tag_name):
+    # Fetch the tag by its name
+    tag = Tag.query.filter_by(name=tag_name).first_or_404()
+
+    # Get all posts associated with this tag
+    posts = tag.posts.all()
+
+    # Render the posts in a template
+    return render_template('tag_posts.html', tag=tag, posts=posts)

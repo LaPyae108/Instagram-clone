@@ -17,6 +17,7 @@ class LoginForm(FlaskForm):
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=100)])
     content = TextAreaField('Content', validators=[DataRequired()])
+    tags = StringField('Tags (comma-separated)')  # New field for tags
     submit = SubmitField('Post')
 
 class CommentForm(FlaskForm):
