@@ -1,17 +1,96 @@
 {% extends "base.html" %}
-
+{% block title %}Home · PostWhatever{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Welcome to PostWhatever</h1>
+
+<h1 class="page-title">Home</h1>
+
+{% if posts %}
+  <div class="feed">
     {% for post in posts %}
-        <div class="post">
-            <h2>{{ post.title }}</h2>
-            <p>{{ post.content }}</p>
-            <p>Posted by <a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a> on {{ post.date_posted.strftime('%Y-%m-%d') }}</p>
-            <a href="{{ url_for('post_detail', post_id=post.id) }}">View Post</a>
+      <article class="card post-card">
+        <header class="card-head">
+          <h2 class="card-title">
+            <a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a>
+          </h2>
+          <div class="card-meta">
+            Posted by
+            <a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a>
+            · {{ post.date_posted.strftime('%Y-%m-%d') }}
+          </div>
+        </header>
+
+        <div class="card-body" style="white-space:pre-wrap;">
+          {{ post.content }}
         </div>
-    {% else %}
-        <p>No posts to show yet. Create your first post!</p>
+
+        {% if post.tags %}
+          <div class="tags" style="margin-top:8px;">
+            {% for tag in post.tags %}
+              <a class="tag" href="{{ url_for('tag_posts', tag_name=tag.name) }}">#{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <footer class="card-foot">
+          <div class="like-row" role="group" aria-label="Post reactions">
+            <span class="like-count" aria-live="polite">
+              Likes:
+              <strong data-like-count="{{ post.id }}">
+                {# dynamic? use SQL count(); else Jinja length #}
+                {% if post.likes.filter_by is not undefined %}
+                  {{ post.likes.count() }}
+                {% else %}
+                  {{ post.likes|length }}
+                {% endif %}
+              </strong>
+            </span>
+
+            {% if current_user.is_authenticated %}
+              {# robust liked check for both dynamic & list relations #}
+              {% set is_liked = (
+                   (post.likes.filter_by(user_id=current_user.id).first() is not none)
+                   if (post.likes.filter_by is not undefined)
+                   else (current_user.id in (post.likes|map(attribute='user_id')|list))
+                 )
+              %}
+              <button class="btn btn-like"
+                      data-like-btn
+                      data-post-id="{{ post.id }}"
+                      aria-pressed="{{ 'true' if is_liked else 'false' }}"
+                      aria-label="Toggle like for this post">
+                <span class="like-text">{% if is_liked %}Unlike{% else %}Like{% endif %}</span>
+              </button>
+
+              <noscript>
+                <form method="POST" action="{{ url_for('like_post', post_id=post.id) }}" style="display:inline;">
+                  <button class="btn btn-like">{% if is_liked %}Unlike{% else %}Like{% endif %}</button>
+                </form>
+              </noscript>
+            {% endif %}
+
+            {# Comments link with safe count #}
+            <a class="btn btn-ghost" href="{{ url_for('post_detail', post_id=post.id) }}">
+              View comments
+              <span class="count-badge">
+                {% if post.comments.filter_by is not undefined %}
+                  {{ post.comments.count() }}
+                {% else %}
+                  {{ post.comments|length }}
+                {% endif %}
+              </span>
+            </a>
+          </div>
+        </footer>
+      </article>
     {% endfor %}
-</div>
+  </div>
+{% else %}
+  <div class="card">
+    <p>No posts yet. Be the first to share something!</p>
+    {% if current_user.is_authenticated %}
+      <p style="margin-top:10px;"><a class="btn btn-primary" href="{{ url_for('new_post') }}">Create your first post</a></p>
+    {% endif %}
+  </div>
+{% endif %}
+
 {% endblock %}

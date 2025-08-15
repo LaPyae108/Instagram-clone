@@ -1,23 +1,37 @@
 {% extends "base.html" %}
-
+{% block title %}Edit Post · PostWhatever{% endblock %}
 {% block content %}
-<div class="container">
-    <div class="form-container">
-        <h2>Edit Post</h2>
-        <form method="POST">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.title.label }}
-                {{ form.title(size=50, class="form-input") }}
-            </div>
-            <div class="form-group">
-                {{ form.content.label }}
-                {{ form.content(rows=10, cols=50, class="form-input") }}
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">{{ form.submit() }}</button>
-            </div>
-        </form>
+
+<h1 class="page-title">Edit Post</h1>
+
+<div class="card">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.title.label }}
+      {{ form.title(size=50, class="form-input") }}
     </div>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.content.label }}
+      {{ form.content(rows=8, cols=50, class="form-input") }}
+    </div>
+
+    <!-- Include tags in edit — matches your views.py prefill -->
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.tags.label }}
+      {{ form.tags(class="form-input") }}
+      <small class="form-text" style="color:var(--muted); display:block; margin-top:6px;">
+        Edit tags (comma-separated)
+      </small>
+    </div>
+
+    <div class="form-group" style="margin-top:18px;">
+      <button type="submit" class="btn btn-primary">{{ form.submit.label.text or 'Save changes' }}</button>
+      <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn" style="margin-left:8px; border:1px solid var(--border); background:#fff;">Cancel</a>
+    </div>
+  </form>
 </div>
+
 {% endblock %}

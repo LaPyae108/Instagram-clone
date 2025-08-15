@@ -1,36 +1,40 @@
 {% extends "base.html" %}
-
+{% block title %}New Post · PostWhatever{% endblock %}
 {% block content %}
-<div class="container">
-    <div class="form-container">
-        <h2>Create a New Post</h2>
-        <form method="POST">
-            {{ form.hidden_tag() }}
 
-            <!-- Title Field -->
-            <div class="form-group">
-                {{ form.title.label }}<br>
-                {{ form.title(size=50, class="form-input") }}
-            </div>
+<h1 class="page-title">Create a New Post</h1>
 
-            <!-- Content Field -->
-            <div class="form-group">
-                {{ form.content.label }}<br>
-                {{ form.content(rows=10, cols=50, class="form-input") }}
-            </div>
+<div class="card">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
 
-            <!-- Tags Field -->
-            <div class="form-group">
-                {{ form.tags.label }}<br>
-                {{ form.tags(class="form-input") }}
-                <small class="form-text">Enter tags separated by commas (e.g., Python, Flask, Web Development).</small>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="form-group">
-                {{ form.submit(class="btn btn-primary") }}
-            </div>
-        </form>
+    <!-- Title -->
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.title.label }}
+      {{ form.title(size=50, class="form-input", placeholder="Give your post a short title") }}
     </div>
+
+    <!-- Content -->
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.content.label }}
+      {{ form.content(rows=8, cols=50, class="form-input", placeholder="What’s on your mind?") }}
+    </div>
+
+    <!-- Tags -->
+    <div class="form-group" style="margin-bottom:14px;">
+      {{ form.tags.label }}
+      {{ form.tags(class="form-input", placeholder="e.g. Python, Flask, Web") }}
+      <small class="form-text" style="color:var(--muted); display:block; margin-top:6px;">
+        Separate tags with commas. They’ll show as hashtags.
+      </small>
+    </div>
+
+    <!-- Submit -->
+    <div class="form-group" style="margin-top:18px;">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('home') }}" class="btn" style="margin-left:8px; border:1px solid var(--border); background:#fff;">Cancel</a>
+    </div>
+  </form>
 </div>
+
 {% endblock %}

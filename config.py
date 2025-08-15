@@ -3,7 +3,7 @@ import os
 WTF_CSRF_ENABLED = True
 
 # Secret key for securely signing the session cookie and other security-related uses
-SECRET_KEY = os.environ.get('SECRET_KEY', 'a-very-secret-secret')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
 # Base directory for the app
 basedir = os.path.abspath(os.path.dirname(__file__))

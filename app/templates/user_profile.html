@@ -1,19 +1,39 @@
 {% extends "base.html" %}
-
+{% block title %}{{ user.username }} · PostWhatever{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>{{ user.username }}</h1>
-    <h2>Posts by {{ user.username }}</h2>
 
+<header class="card" style="margin-bottom:16px;">
+  <h1 style="margin:0;">{{ user.username }}</h1>
+  <p class="card-meta" style="margin:6px 0 0;">User profile</p>
+</header>
+
+<h2 class="page-title" style="margin-top:0;">Posts by {{ user.username }}</h2>
+
+{% if posts %}
+  <div class="feed">
     {% for post in posts %}
-        <div class="post">
-            <h2>{{ post.title }}</h2>
-            <p>{{ post.content }}</p>
-            <p>Posted on {{ post.date_posted.strftime('%Y-%m-%d') }}</p>
-            <a href="{{ url_for('post_detail', post_id=post.id) }}">View Post</a>
+      <article class="card">
+        <header class="card-head">
+          <h3 class="card-title" style="margin-bottom:6px;">
+            <a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a>
+          </h3>
+          <div class="card-meta">{{ post.date_posted.strftime('%Y-%m-%d') }}</div>
+        </header>
+        <div class="card-body">
+          <p style="margin:0;">{{ post.content }}</p>
         </div>
-    {% else %}
-        <p>{{ user.username }} has not created any posts yet.</p>
+        {% if post.tags %}
+          <div class="tags" style="margin-top:8px;">
+            {% for t in post.tags %}
+              <a href="{{ url_for('tag_posts', tag_name=t.name) }}" class="tag">#{{ t.name }}</a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </article>
     {% endfor %}
-</div>
+  </div>
+{% else %}
+  <div class="card"><p>{{ user.username }} hasn’t created any posts yet.</p></div>
+{% endif %}
+
 {% endblock %}
