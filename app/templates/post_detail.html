@@ -65,8 +65,16 @@
     {% if current_user.is_authenticated and current_user == post.author %}
       <div class="post-actions" style="margin-top:12px;">
         <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-primary">Edit</a>
-        <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display:inline;">
-          <button type="submit" class="btn" style="margin-left:6px; background:#fff; border:1px solid var(--border);">Delete</button>
+
+        <!-- Delete must include CSRF token -->
+        <form method="POST"
+              action="{{ url_for('delete_post', post_id=post.id) }}"
+              style="display:inline;"
+              onsubmit="return confirm('Delete this post?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn" style="margin-left:6px; background:#fff; border:1px solid var(--border);">
+            Delete
+          </button>
         </form>
       </div>
     {% endif %}
@@ -131,7 +139,6 @@
     <div class="form-group">
       {{ form.content.label(class="form-label") }}
       {{ form.content(rows=4, class="form-input", placeholder="Write something nice…", **{'data-autosize': 'true'}) }}
-      {# Ensure the textarea has name="content" in your FlaskForm (it does) #}
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">
